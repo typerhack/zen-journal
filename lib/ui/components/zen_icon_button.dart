@@ -55,8 +55,8 @@ class _ZenIconButtonState extends State<ZenIconButton> {
           opacity: widget.isDisabled
               ? 0.4
               : _pressed
-                  ? 0.5
-                  : 1.0,
+              ? 0.5
+              : 1.0,
           duration: reduce ? Duration.zero : ZenSpacing.fast,
           child: SizedBox(
             width: 48,

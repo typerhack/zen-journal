@@ -42,11 +42,12 @@ class _ZenButtonState extends State<ZenButton> {
     final textColor = widget.isDisabled
         ? theme.colors.onSurfaceFaint
         : widget.isDestructive
-            ? theme.colors.destructive
-            : theme.colors.onSurface;
+        ? theme.colors.destructive
+        : theme.colors.onSurface;
 
-    final bgColor =
-        _pressed ? theme.colors.surfaceSunken : theme.colors.surfaceElevated;
+    final bgColor = _pressed
+        ? theme.colors.surfaceSunken
+        : theme.colors.surfaceElevated;
 
     return Semantics(
       label: widget.label,

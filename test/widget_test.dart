@@ -4,9 +4,7 @@ import 'package:zen_journal/app.dart';
 
 void main() {
   testWidgets('App renders without crashing', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(child: ZenJournalApp()),
-    );
+    await tester.pumpWidget(const ProviderScope(child: ZenJournalApp()));
     expect(find.byType(ZenJournalApp), findsOneWidget);
   });
 }

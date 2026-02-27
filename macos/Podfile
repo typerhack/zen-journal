@@ -1,4 +1,4 @@
-platform :osx, '10.15'
+platform :osx, '14.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -25,6 +25,14 @@ end
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
 
 flutter_macos_podfile_setup
+
+# onnxruntime-objc ships as a prebuilt static library, which triggers
+# CocoaPods' transitive-static-dep check. Suppress it so pod install works.
+pre_install do |installer|
+  Pod::Installer::Xcode::TargetValidator.send(
+    :define_method, :verify_no_static_framework_transitive_dependencies
+  ) {}
+end
 
 target 'Runner' do
   use_frameworks!

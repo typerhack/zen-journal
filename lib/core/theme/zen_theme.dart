@@ -16,11 +16,7 @@ import 'zen_spacing.dart';
 /// SizedBox(height: theme.spacing.s16)
 /// ```
 class ZenTheme extends InheritedWidget {
-  const ZenTheme({
-    super.key,
-    required this.data,
-    required super.child,
-  });
+  const ZenTheme({super.key, required this.data, required super.child});
 
   final ZenThemeData data;
 
@@ -59,21 +55,19 @@ class ZenThemeData {
   // ── Named constructors ─────────────────────────────────────────────────────
 
   factory ZenThemeData.zen() => ZenThemeData(
-        brightness: Brightness.light,
-        colors: ZenColors.light,
-        text: ZenTextStyles.forColor(ZenColors.light.onSurface),
-      );
+    brightness: Brightness.light,
+    colors: ZenColors.light,
+    text: ZenTextStyles.forColor(ZenColors.light.onSurface),
+  );
 
   factory ZenThemeData.dark() => ZenThemeData(
-        brightness: Brightness.dark,
-        colors: ZenColors.dark,
-        text: ZenTextStyles.forColor(ZenColors.dark.onSurface),
-      );
+    brightness: Brightness.dark,
+    colors: ZenColors.dark,
+    text: ZenTextStyles.forColor(ZenColors.dark.onSurface),
+  );
 
   factory ZenThemeData.fromBrightness(Brightness brightness) =>
-      brightness == Brightness.dark
-          ? ZenThemeData.dark()
-          : ZenThemeData.zen();
+      brightness == Brightness.dark ? ZenThemeData.dark() : ZenThemeData.zen();
 
   @override
   bool operator ==(Object other) =>

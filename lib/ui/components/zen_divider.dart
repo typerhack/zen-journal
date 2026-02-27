@@ -3,10 +3,7 @@ import '../../core/theme/theme.dart';
 
 /// Subtle 1px horizontal divider using [ZenColors.onSurfaceFaint].
 class ZenDivider extends StatelessWidget {
-  const ZenDivider({
-    super.key,
-    this.indent = 0,
-  });
+  const ZenDivider({super.key, this.indent = 0});
 
   final double indent;
 

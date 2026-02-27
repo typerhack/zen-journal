@@ -3,8 +3,6 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  flutter_gemma
-  flutter_onnxruntime
   flutter_secure_storage_linux
   printing
   record_linux

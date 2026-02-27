@@ -31,7 +31,8 @@ class _ZenJournalAppState extends ConsumerState<ZenJournalApp>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final shouldObscure = state == AppLifecycleState.inactive ||
+    final shouldObscure =
+        state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused;
     if (shouldObscure != _obscured) {
       setState(() => _obscured = shouldObscure);
@@ -46,23 +47,22 @@ class _ZenJournalAppState extends ConsumerState<ZenJournalApp>
 
     return ZenTheme(
       data: themeData,
-      child: Stack(
-        children: [
-          WidgetsApp.router(
-            title: 'zen journal',
-            color: themeData.colors.accent,
-            routerConfig: appRouter,
-            builder: (context, child) => ColoredBox(
-              color: themeData.colors.surface,
-              child: child ?? const SizedBox.shrink(),
-            ),
+      child: WidgetsApp.router(
+        title: 'zen journal',
+        color: themeData.colors.accent,
+        routerConfig: appRouter,
+        builder: (context, child) => ColoredBox(
+          color: themeData.colors.surface,
+          // Stack lives inside WidgetsApp so Directionality is already provided
+          child: Stack(
+            children: [
+              child ?? const SizedBox.shrink(),
+              // Background obscure layer — hides content in app switcher
+              if (_obscured)
+                Positioned.fill(child: _ObscureLayer(colors: themeData.colors)),
+            ],
           ),
-          // Background obscure layer — hides content in app switcher
-          if (_obscured)
-            Positioned.fill(
-              child: _ObscureLayer(colors: themeData.colors),
-            ),
-        ],
+        ),
       ),
     );
   }

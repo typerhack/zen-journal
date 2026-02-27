@@ -32,13 +32,13 @@ dependencies:
   http: ^1.2.2
 
   # Voice — audio recording
-  record: ^5.2.0
+  record: ^6.2.0
 
-  # AI — on-device ONNX (DistilBERT)
-  flutter_onnxruntime: ^1.0.0
+  # AI — on-device ONNX (DistilBERT) — added when AI feature is implemented
+  # flutter_onnxruntime: ^1.0.0
 
-  # AI — Gemma 2B
-  flutter_gemma: ^0.12.4
+  # AI — Gemma 2B — added when AI feature is implemented
+  # flutter_gemma: ^0.12.4
 
   # Markdown renderer
   flutter_markdown: ^0.7.6

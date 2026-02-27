@@ -19,7 +19,9 @@ class ZenScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.zenTheme;
-    Widget body = padding != null ? Padding(padding: padding!, child: child) : child;
+    Widget body = padding != null
+        ? Padding(padding: padding!, child: child)
+        : child;
     if (safeArea) body = SafeArea(child: body);
     return ColoredBox(color: theme.colors.surface, child: body);
   }
