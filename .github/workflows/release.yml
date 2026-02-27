@@ -109,63 +109,6 @@ jobs:
           name: macos-x86_64
           path: macos-x86_64.zip
 
-# ── macOS (Universal Binary) ──────────────────────────────────────────────────
-  build-macos-universal:
-    name: macOS (Universal Binary)
-    runs-on: macos-latest
-    needs: [build-macos-arm, build-macos-intel]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: macos-arm64
-          path: artifacts/arm64
-      - uses: actions/download-artifact@v4
-        with:
-          name: macos-x86_64
-          path: artifacts/x86_64
-      - name: Unzip app bundles
-        run: |
-          unzip -q artifacts/arm64/macos-arm64.zip -d artifacts/arm64
-          unzip -q artifacts/x86_64/macos-x86_64.zip -d artifacts/x86_64
-      - name: Merge into universal binary with lipo
-        run: |
-          ARM_APP="artifacts/arm64/zen_journal.app"
-          X64_APP="artifacts/x86_64/zen_journal.app"
-          UNI_APP="artifacts/universal/zen_journal.app"
-
-          mkdir -p "${UNI_APP}"
-
-          # Copy ARM bundle as the base
-          cp -R "${ARM_APP}/." "${UNI_APP}/"
-
-          # Find all Mach-O binaries and frameworks to merge
-          find "${ARM_APP}" \( -type f -o -type l \) | while read -r ARM_FILE; do
-            REL="${ARM_FILE#${ARM_APP}/}"
-            X64_FILE="${X64_APP}/${REL}"
-            UNI_FILE="${UNI_APP}/${REL}"
-
-            if [[ ! -f "${X64_FILE}" ]]; then
-              continue
-            fi
-
-            # Check if it's a Mach-O binary
-            if file "${ARM_FILE}" | grep -q "Mach-O"; then
-              lipo -create \
-                "${ARM_FILE}" \
-                "${X64_FILE}" \
-                -output "${UNI_FILE}"
-            fi
-          done
-      - name: Archive universal .app
-        run: |
-          cd artifacts/universal
-          zip -r ../../macos-universal.zip zen_journal.app
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macos-universal
-          path: macos-universal.zip
-
 # ── Windows (x64) ─────────────────────────────────────────────────────────────
   build-windows-x64:
     name: Windows (x64)
@@ -282,7 +225,6 @@ jobs:
       - build-ios
       - build-macos-arm
       - build-macos-intel
-      - build-macos-universal
       - build-windows-x64
       - build-windows-arm64
       - build-linux-x64
@@ -311,8 +253,6 @@ jobs:
              "release-files/zen-journal-${V}-ios.zip"
 
           # macOS
-          cp artifacts/macos-universal/macos-universal.zip \
-             "release-files/zen-journal-${V}-macos-universal.zip"
           cp artifacts/macos-arm64/macos-arm64.zip \
              "release-files/zen-journal-${V}-macos-arm64.zip"
           cp artifacts/macos-x86_64/macos-x86_64.zip \
