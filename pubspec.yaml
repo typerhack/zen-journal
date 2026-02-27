@@ -23,7 +23,7 @@ dependencies:
   path: ^1.9.1
 
   # Secure key storage
-  # flutter_secure_storage: ^10.0.0
+  flutter_secure_storage: ^10.0.0
 
   # Google Sign-In + Drive
   google_sign_in: ^6.2.2

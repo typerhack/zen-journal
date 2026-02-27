@@ -141,6 +141,29 @@ jobs:
             throw "Expected build\windows\x64\runner\Release\* to exist."
           }
 
+  build-windows-arm64:
+    name: Build Windows (arm64)
+    runs-on: windows-11-arm
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Flutter (arm64 fallback)
+        shell: pwsh
+        run: |
+          git clone --depth 1 --branch "${env:FLUTTER_VERSION}" https://github.com/flutter/flutter.git "$env:USERPROFILE\flutter"
+          "$env:USERPROFILE\flutter\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - run: flutter --version
+      - run: flutter pub get
+      - run: flutter build windows --release
+      - name: Validate release output path
+        shell: pwsh
+        run: |
+          $armPath = "build\windows\arm64\runner\Release\*"
+          $x64Path = "build\windows\x64\runner\Release\*"
+          if (!(Test-Path $armPath) -and !(Test-Path $x64Path)) {
+            throw "Windows ARM runner did not produce arm64 or x64 release output."
+          }
+
   build-linux-x64:
     name: Build Linux (x64)
     runs-on: ubuntu-latest

@@ -38,9 +38,9 @@ Status legend: [done] done | [todo] todo | [wip] in progress
 
 ---
 
-## Phase 4 — Storage Layer [wip]
+## Phase 4 — Storage Layer [done]
 
-- [wip] **SQLCipher setup** — Encrypted database opens on first launch with generated key; key storage currently uses SharedPreferences fallback (not flutter_secure_storage). Must be hardened before release.
+- [done] **SQLCipher setup** — Encrypted database opens on first launch with a 256-bit CSPRNG key stored in the platform secure enclave via flutter_secure_storage (iOS/macOS Keychain, Android Keystore, Windows DPAPI, Linux Secret Service). Migration path handles existing installs that used the interim SharedPreferences store.
 - [done] **Schema & migrations** — Core tables and versioned migration runner implemented. All CREATE statements use IF NOT EXISTS for idempotency.
 - [done] **FTS5 search index** — Standalone virtual table and triggers for entries + voice_transcripts implemented. FTS5 creation is wrapped in try/catch — graceful fallback on Android system SQLite builds that omit FTS5. DB recovery logic deletes and recreates the file if a broken migration state is detected on open.
 - [done] **Repository layer** — EntryRepository, SettingsRepository, and Riverpod AsyncNotifierProvider integration implemented.
