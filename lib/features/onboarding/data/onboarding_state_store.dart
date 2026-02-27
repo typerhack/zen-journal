@@ -10,6 +10,9 @@ class OnboardingState {
     required this.firstEntrySavedAtIso,
     required this.entryCount,
     required this.notificationNudgeDismissed,
+    required this.reminderEnabled,
+    required this.reminderHour,
+    required this.reminderMinute,
   });
 
   final bool isComplete;
@@ -19,6 +22,9 @@ class OnboardingState {
   final String? firstEntrySavedAtIso;
   final int entryCount;
   final bool notificationNudgeDismissed;
+  final bool reminderEnabled;
+  final int? reminderHour;
+  final int? reminderMinute;
 
   bool get shouldShowReminderNudge {
     if (notificationNudgeDismissed) return false;
@@ -51,6 +57,9 @@ class OnboardingController extends AsyncNotifier<OnboardingState> {
   static const _firstEntrySavedAtKey = 'journal.first_entry_saved_at';
   static const _entryCountKey = 'journal.entry_count';
   static const _notificationNudgeDismissedKey = 'notifications.nudge_dismissed';
+  static const _reminderEnabledKey = 'notifications.reminder_enabled';
+  static const _reminderHourKey = 'notifications.reminder_hour';
+  static const _reminderMinuteKey = 'notifications.reminder_minute';
 
   @override
   Future<OnboardingState> build() async {
@@ -65,6 +74,9 @@ class OnboardingController extends AsyncNotifier<OnboardingState> {
       entryCount: prefs.getInt(_entryCountKey) ?? 0,
       notificationNudgeDismissed:
           prefs.getBool(_notificationNudgeDismissedKey) ?? false,
+      reminderEnabled: prefs.getBool(_reminderEnabledKey) ?? false,
+      reminderHour: prefs.getInt(_reminderHourKey),
+      reminderMinute: prefs.getInt(_reminderMinuteKey),
     );
   }
 
@@ -83,6 +95,9 @@ class OnboardingController extends AsyncNotifier<OnboardingState> {
         firstEntrySavedAtIso: current.firstEntrySavedAtIso,
         entryCount: current.entryCount,
         notificationNudgeDismissed: current.notificationNudgeDismissed,
+        reminderEnabled: current.reminderEnabled,
+        reminderHour: current.reminderHour,
+        reminderMinute: current.reminderMinute,
       ),
     );
   }
@@ -102,6 +117,9 @@ class OnboardingController extends AsyncNotifier<OnboardingState> {
         firstEntrySavedAtIso: current.firstEntrySavedAtIso,
         entryCount: current.entryCount,
         notificationNudgeDismissed: current.notificationNudgeDismissed,
+        reminderEnabled: current.reminderEnabled,
+        reminderHour: current.reminderHour,
+        reminderMinute: current.reminderMinute,
       ),
     );
   }
@@ -125,6 +143,34 @@ class OnboardingController extends AsyncNotifier<OnboardingState> {
         firstEntrySavedAtIso: nowIso,
         entryCount: nextEntryCount,
         notificationNudgeDismissed: current.notificationNudgeDismissed,
+        reminderEnabled: current.reminderEnabled,
+        reminderHour: current.reminderHour,
+        reminderMinute: current.reminderMinute,
+      ),
+    );
+  }
+
+  Future<void> enableReminder({required int hour, required int minute}) async {
+    final current = state.valueOrNull;
+    if (current == null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_reminderEnabledKey, true);
+    await prefs.setInt(_reminderHourKey, hour);
+    await prefs.setInt(_reminderMinuteKey, minute);
+    await prefs.setBool(_notificationNudgeDismissedKey, true);
+    state = AsyncData(
+      OnboardingState(
+        isComplete: current.isComplete,
+        driveSyncEnabled: current.driveSyncEnabled,
+        themePreference: current.themePreference,
+        firstEntryText: current.firstEntryText,
+        firstEntrySavedAtIso: current.firstEntrySavedAtIso,
+        entryCount: current.entryCount,
+        notificationNudgeDismissed: true,
+        reminderEnabled: true,
+        reminderHour: hour,
+        reminderMinute: minute,
       ),
     );
   }
@@ -144,6 +190,9 @@ class OnboardingController extends AsyncNotifier<OnboardingState> {
         firstEntrySavedAtIso: current.firstEntrySavedAtIso,
         entryCount: current.entryCount,
         notificationNudgeDismissed: true,
+        reminderEnabled: current.reminderEnabled,
+        reminderHour: current.reminderHour,
+        reminderMinute: current.reminderMinute,
       ),
     );
   }
@@ -163,6 +212,9 @@ class OnboardingController extends AsyncNotifier<OnboardingState> {
         firstEntrySavedAtIso: current.firstEntrySavedAtIso,
         entryCount: current.entryCount,
         notificationNudgeDismissed: current.notificationNudgeDismissed,
+        reminderEnabled: current.reminderEnabled,
+        reminderHour: current.reminderHour,
+        reminderMinute: current.reminderMinute,
       ),
     );
   }

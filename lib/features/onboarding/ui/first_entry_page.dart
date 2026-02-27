@@ -122,8 +122,7 @@ class _FirstEntryPageState extends ConsumerState<FirstEntryPage> {
               Expanded(
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: ZenButton(
-                    label: 'try voice',
+                  child: _MicIconButton(
                     onTap: () {
                       setState(() {
                         _showMicPermissionPrompt = true;
@@ -188,5 +187,101 @@ class _FirstEntryPageState extends ConsumerState<FirstEntryPage> {
         ],
       ),
     );
+  }
+}
+
+class _MicIconButton extends StatefulWidget {
+  const _MicIconButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  State<_MicIconButton> createState() => _MicIconButtonState();
+}
+
+class _MicIconButtonState extends State<_MicIconButton> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.zenTheme;
+    return Semantics(
+      label: 'Try voice input',
+      button: true,
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _pressed = true),
+        onTapUp: (_) => setState(() => _pressed = false),
+        onTapCancel: () => setState(() => _pressed = false),
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: ZenSpacing.fast,
+          curve: ZenSpacing.easeDefault,
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: _pressed
+                ? theme.colors.surfaceSunken
+                : theme.colors.surfaceElevated,
+            borderRadius: BorderRadius.circular(ZenSpacing.radiusMedium),
+          ),
+          child: Center(
+            child: SizedBox(
+              width: 22,
+              height: 22,
+              child: CustomPaint(
+                painter: _MicPainter(color: theme.colors.onSurface),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MicPainter extends CustomPainter {
+  const _MicPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.round;
+
+    final bodyRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(
+        size.width * 0.34,
+        size.height * 0.16,
+        size.width * 0.32,
+        size.height * 0.48,
+      ),
+      Radius.circular(size.width * 0.16),
+    );
+    canvas.drawRRect(bodyRect, stroke);
+
+    final stemStart = Offset(size.width * 0.5, size.height * 0.64);
+    final stemEnd = Offset(size.width * 0.5, size.height * 0.80);
+    canvas.drawLine(stemStart, stemEnd, stroke);
+
+    final baseStart = Offset(size.width * 0.35, size.height * 0.84);
+    final baseEnd = Offset(size.width * 0.65, size.height * 0.84);
+    canvas.drawLine(baseStart, baseEnd, stroke);
+
+    final arcRect = Rect.fromLTWH(
+      size.width * 0.22,
+      size.height * 0.40,
+      size.width * 0.56,
+      size.height * 0.36,
+    );
+    canvas.drawArc(arcRect, 0.0, 3.14159, false, stroke);
+  }
+
+  @override
+  bool shouldRepaint(covariant _MicPainter oldDelegate) {
+    return oldDelegate.color != color;
   }
 }

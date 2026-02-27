@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'core/theme/theme.dart';
 import 'core/router/app_router.dart';
 import 'features/onboarding/data/onboarding_state_store.dart';
@@ -17,6 +18,8 @@ class ZenJournalApp extends ConsumerStatefulWidget {
 class _ZenJournalAppState extends ConsumerState<ZenJournalApp>
     with WidgetsBindingObserver {
   bool _obscured = false;
+  GoRouter? _router;
+  bool? _routerOnboardingComplete;
 
   @override
   void initState() {
@@ -27,7 +30,17 @@ class _ZenJournalAppState extends ConsumerState<ZenJournalApp>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _router?.dispose();
     super.dispose();
+  }
+
+  GoRouter _resolveRouter(bool onboardingComplete) {
+    if (_router == null || _routerOnboardingComplete != onboardingComplete) {
+      _router?.dispose();
+      _router = createAppRouter(onboardingComplete: onboardingComplete);
+      _routerOnboardingComplete = onboardingComplete;
+    }
+    return _router!;
   }
 
   @override
@@ -97,9 +110,7 @@ class _ZenJournalAppState extends ConsumerState<ZenJournalApp>
           child: WidgetsApp.router(
             title: 'zen journal',
             color: themeData.colors.accent,
-            routerConfig: createAppRouter(
-              onboardingComplete: onboarding.isComplete,
-            ),
+            routerConfig: _resolveRouter(onboarding.isComplete),
             builder: (context, child) => ColoredBox(
               color: themeData.colors.surface,
               // Stack lives inside WidgetsApp so Directionality is already provided
