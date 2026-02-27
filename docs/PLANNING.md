@@ -38,12 +38,12 @@ Status legend: [done] done | [todo] todo | [wip] in progress
 
 ---
 
-## Phase 4 — Storage Layer [todo]
+## Phase 4 — Storage Layer [wip]
 
-- [todo] **SQLCipher setup** — Open encrypted database on first launch; generate AES-256 key and store in flutter_secure_storage.
-- [todo] **Schema & migrations** — Create all tables (entries, voice_transcripts, entry_moods, entry_themes, entry_reflections, settings) with versioned migration runner.
-- [todo] **FTS5 search index** — Standalone virtual table with triggers for both entries and voice_transcripts tables; query uses `entry_id` column.
-- [todo] **Repository layer** — EntryRepository, SettingsRepository with Riverpod AsyncNotifierProvider; no raw SQL leaking into UI.
+- [wip] **SQLCipher setup** — Encrypted database opens on first launch with generated key; key storage currently uses SharedPreferences fallback (not flutter_secure_storage). Must be hardened before release.
+- [done] **Schema & migrations** — Core tables and versioned migration runner implemented. All CREATE statements use IF NOT EXISTS for idempotency.
+- [done] **FTS5 search index** — Standalone virtual table and triggers for entries + voice_transcripts implemented. FTS5 creation is wrapped in try/catch — graceful fallback on Android system SQLite builds that omit FTS5. DB recovery logic deletes and recreates the file if a broken migration state is detected on open.
+- [done] **Repository layer** — EntryRepository, SettingsRepository, and Riverpod AsyncNotifierProvider integration implemented.
 
 ---
 

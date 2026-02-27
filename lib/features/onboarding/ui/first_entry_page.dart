@@ -11,6 +11,7 @@ import '../../../core/theme/theme.dart';
 import '../../../ui/components/zen_button.dart';
 import '../../../ui/components/zen_scaffold.dart';
 import '../../../ui/components/zen_text_input.dart';
+import '../../journal/data/entry_repository.dart';
 import '../data/onboarding_state_store.dart';
 
 class FirstEntryPage extends ConsumerStatefulWidget {
@@ -50,6 +51,12 @@ class _FirstEntryPageState extends ConsumerState<FirstEntryPage> {
   Future<void> _saveAndContinue() async {
     final entryText = _controller.text.trim();
     if (entryText.isEmpty) return;
+    await ref
+        .read(journalEntriesProvider.notifier)
+        .createEntry(
+          body: entryText,
+          prompt: 'What are you carrying into this moment?',
+        );
     await ref
         .read(onboardingControllerProvider.notifier)
         .saveFirstEntry(entryText);
@@ -222,7 +229,7 @@ class _MicIconButtonState extends State<_MicIconButton> {
             color: _pressed
                 ? theme.colors.surfaceSunken
                 : theme.colors.surfaceElevated,
-            borderRadius: BorderRadius.circular(ZenSpacing.radiusMedium),
+            shape: BoxShape.circle,
           ),
           child: Center(
             child: SizedBox(

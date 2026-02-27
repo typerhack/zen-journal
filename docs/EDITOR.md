@@ -101,32 +101,31 @@ formatting tool:
 
 ```
 ┌─────────────────────────────────────────────┐
-│  Friday, 27 February                        │
-│  ─────────────────────────                  │
-│  What am I carrying today?                  │
-│  ─────────────────────────                  │
+│  Friday, 27 February              discard   │
 │                                             │
-│  I woke up feeling heavy. The               │
-│  meeting yesterday stayed with me.          │
 │                                             │
-│  A realisation                              │
-│  ──────────────────                         │
-│  Maybe it is not about the meeting          │
-│  at all.                                    │
+│  Begin here...                              │
+│  (plain surface — no card, no border)       │
 │                                             │
-│                          [mic]       [save] │
+│                                             │
+│  12 words                             save  │
 └─────────────────────────────────────────────┘
 ```
 
-- The prompt is displayed above the entry in `headingSmall`, `onSurfaceMuted`
-- A subtle divider separates prompt from entry body
-- Cursor is placed at the start of the body on open
-- Keyboard appears automatically on new entry
-- `[save]` is always visible — never requires scrolling to reach
-- `[mic]` sits beside save — quiet, accessible, not dominant
-- No word count, no character count visible while writing (available in
-  entry detail after saving)
-- No autosave indicator — saving is explicit via `[save]`
+- The composer is a **full-screen writing surface** — no modal card, no
+  overlay on top of other content. It covers the screen entirely using the
+  base `surface` colour.
+- Date label (`bodySmall`, `onSurfaceMuted`, `letterSpacing: 0.5`) anchors
+  the top-left. "discard" (`onSurfaceMuted`) sits top-right — plain text,
+  no button chrome.
+- Writing area is bare `EditableText` on the surface — no container, no
+  border, no background distinction. The screen IS the page.
+- Live **word count** fades in bottom-left once the user starts typing
+  (`caption`, `onSurfaceFaint`). It is zero-opacity when the field is empty.
+- "save" (`accent`) sits bottom-right as a text-only action. No button
+  container. Colour alone signals it as the primary commit action.
+- Keyboard appears automatically on open.
+- No autosave — saving is explicit via "save".
 
 ---
 

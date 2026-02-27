@@ -183,6 +183,26 @@ CREATE INDEX idx_entry_themes_entry  ON entry_themes(entry_id);
 
 ## Full-Text Search (FTS5)
 
+### Android compatibility note
+
+FTS5 is not compiled into Android's system SQLite on all devices and OEM
+builds. The migration wraps FTS5 table and trigger creation in a try/catch —
+if `no such module: fts5` is thrown, the error is logged and skipped. All
+core entry tables are always created first, so saving and reading entries
+works on every device regardless of FTS5 availability. Search will be fully
+supported once the storage stack moves to the SQLCipher native layer (which
+ships with FTS5 included).
+
+### Database recovery
+
+If a previous app run left the database in a broken state (e.g. a failed
+migration that set no `user_version`), `ZenDatabase.open()` detects the
+failure, deletes the corrupt file, and recreates it from scratch. This is
+safe during development; once real user data exists, this behaviour must be
+replaced with a proper repair path before shipping.
+
+
+
 SQLite's built-in FTS5 extension enables fast, on-device full-text search
 across all entry content. No external search library needed.
 

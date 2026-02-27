@@ -311,6 +311,49 @@ Icons are allowed and encouraged where they aid clarity. Emojis are not.
 
 ---
 
+## Composer / Full-Screen Writing Surface
+
+When the user initiates a new entry, the UI transitions to a full-screen
+writing surface — not a modal, sheet, or floating card.
+
+**Rules:**
+- The composer covers the entire screen using `ColoredBox(theme.colors.surface)`.
+  Nothing from the previous view is visible behind it.
+- No container, border, or background colour distinguishes the text area from
+  the screen. The surface itself is the page.
+- The top bar contains only: a date label (left) and a "discard" text action
+  (right). No title, no icons.
+- The bottom bar contains: a live word count (left, `caption`, `onSurfaceFaint`,
+  fades in once typing starts) and a "save" text action (right, `accent`).
+- Both "discard" and "save" are text-only (`_ComposerTextButton`) — no
+  containers, no borders. Press state is conveyed through colour shift only.
+- "save" uses `accent` colour as the sole CTA signal. No button chrome needed.
+
+**Pattern — text-only toolbar action:**
+```dart
+class _ComposerTextButton extends StatefulWidget { ... }
+// Press: accent → accentMuted (save) / onSurfaceMuted → onSurfaceFaint (discard)
+// No container. Padding: horizontal 8, vertical 8 (touch target ≥ 48).
+```
+
+---
+
+## Action Pills (icon + label)
+
+Interactive actions that appear over content (e.g. journal page bottom-right)
+use a pill shape combining an icon and a text label. Never use icon-only
+stacked buttons (the Material FAB pattern) — they have no place in this design.
+
+**Rules:**
+- Always pair icon with label. Icon alone is only acceptable when space is
+  genuinely unavailable and the action has been previously labelled in context.
+- Pills use `radiusMedium` (12px), height 44px, horizontal padding 16px.
+- Icon size: 18×18. Icon and label separated by `space8`.
+- Press state: `surfaceSunken` background via `AnimatedContainer`.
+- Multiple actions: arrange horizontally with `space8` gap, not stacked vertically.
+
+---
+
 ## What We Never Do
 
 - No emojis — anywhere, in any context.
