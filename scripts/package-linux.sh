@@ -39,6 +39,23 @@ case "$ARCH" in
     ;;
 esac
 
+# RPM spec constraints:
+# - Version cannot contain '-'
+# - Pre-release/build metadata should be encoded in Release
+RPM_VERSION="${VERSION%%-*}"
+RPM_RELEASE_SUFFIX=""
+if [[ "${VERSION}" == *"-"* ]]; then
+  RPM_RELEASE_SUFFIX="${VERSION#*-}"
+fi
+
+# Sanitize release suffix for rpmbuild (allow only alnum/._)
+RPM_RELEASE_SUFFIX="$(echo "${RPM_RELEASE_SUFFIX}" | sed -E 's/[^A-Za-z0-9._]+/./g; s/^[._]+//; s/[._]+$//')"
+if [[ -n "${RPM_RELEASE_SUFFIX}" ]]; then
+  RPM_RELEASE="1.${RPM_RELEASE_SUFFIX}"
+else
+  RPM_RELEASE="1"
+fi
+
 BUNDLE_DIR="${REPO_ROOT}/build/linux/${FLUTTER_ARCH}/release/bundle"
 DIST_DIR="${REPO_ROOT}/dist"
 APP_NAME="zen-journal"
@@ -174,8 +191,8 @@ EOF
   # RPM spec
   cat > "${RPM_ROOT}/SPECS/${APP_NAME}.spec" << EOF
 Name:           ${APP_NAME}
-Version:        ${VERSION}
-Release:        1
+Version:        ${RPM_VERSION}
+Release:        ${RPM_RELEASE}
 Summary:        ${DESCRIPTION}
 License:        MIT
 URL:            https://github.com/typerhack/zen-journal
@@ -207,7 +224,7 @@ EOF
   local RPM_FILE
   RPM_FILE=$(find "${RPM_ROOT}/RPMS" -name "*.rpm" | head -1)
   if [[ -n "${RPM_FILE}" ]]; then
-    local OUT="${DIST_DIR}/${APP_NAME}-${VERSION}-1.${RPM_ARCH}.rpm"
+    local OUT="${DIST_DIR}/${APP_NAME}-${VERSION}-${RPM_RELEASE}.${RPM_ARCH}.rpm"
     cp "${RPM_FILE}" "${OUT}"
     echo "  [ok] ${OUT}"
   fi
