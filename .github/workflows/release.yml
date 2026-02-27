@@ -7,7 +7,7 @@ on:
 
 env:
   VERSION: ${{ github.ref_name }}   # e.g. v1.0.0
-  FLUTTER_VERSION: 3.38.4
+  FLUTTER_VERSION: 3.41.2
 
 # ── Android ───────────────────────────────────────────────────────────────────
 jobs:
