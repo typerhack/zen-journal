@@ -14,6 +14,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
       - run: flutter pub get
       - run: flutter analyze
       - run: dart format --output=none --set-exit-if-changed lib/ test/
@@ -26,6 +27,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
       - run: flutter pub get
       - run: flutter test --coverage
 
@@ -42,11 +44,12 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
       - run: flutter pub get
-      - run: flutter build apk --release --no-shrink
+      - run: flutter build apk --release
 
   build-linux:
-    name: Build Linux
+    name: Build Linux (x64)
     runs-on: ubuntu-latest
     needs: [lint, test]
     steps:
@@ -55,5 +58,6 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
       - run: flutter pub get
       - run: flutter build linux --release

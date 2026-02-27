@@ -5,9 +5,13 @@ on:
     tags:
       - 'v*.*.*'
 
+env:
+  VERSION: ${{ github.ref_name }}   # e.g. v1.0.0
+
+# ── Android ───────────────────────────────────────────────────────────────────
 jobs:
   build-android:
-    name: Android
+    name: Android (APK + AAB)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,6 +22,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
       - run: flutter pub get
       - run: flutter build apk --release
       - run: flutter build appbundle --release
@@ -28,79 +33,297 @@ jobs:
             build/app/outputs/flutter-apk/app-release.apk
             build/app/outputs/bundle/release/app-release.aab
 
+# ── iOS ───────────────────────────────────────────────────────────────────────
   build-ios:
-    name: iOS
+    name: iOS (no-codesign)
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
       - run: flutter pub get
       - run: flutter build ios --release --no-codesign
+      - name: Archive .app
+        run: |
+          cd build/ios/iphoneos
+          zip -r ../../../ios-runner.zip Runner.app
       - uses: actions/upload-artifact@v4
         with:
           name: ios
-          path: build/ios/iphoneos/Runner.app
+          path: ios-runner.zip
 
-  build-macos:
-    name: macOS
+# ── macOS (Apple Silicon) ─────────────────────────────────────────────────────
+  build-macos-arm:
+    name: macOS (Apple Silicon arm64)
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
       - run: flutter pub get
       - run: flutter build macos --release
+      - name: Archive .app
+        run: |
+          cd build/macos/Build/Products/Release
+          zip -r ../../../../../macos-arm64.zip zen_journal.app
       - uses: actions/upload-artifact@v4
         with:
-          name: macos
-          path: build/macos/Build/Products/Release/zen_journal.app
+          name: macos-arm64
+          path: macos-arm64.zip
 
-  build-windows:
-    name: Windows
+# ── macOS (Intel x86_64) ──────────────────────────────────────────────────────
+  build-macos-intel:
+    name: macOS (Intel x86_64)
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter build macos --release
+      - name: Archive .app
+        run: |
+          cd build/macos/Build/Products/Release
+          zip -r ../../../../../macos-x86_64.zip zen_journal.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-x86_64
+          path: macos-x86_64.zip
+
+# ── macOS (Universal Binary) ──────────────────────────────────────────────────
+  build-macos-universal:
+    name: macOS (Universal Binary)
+    runs-on: macos-latest
+    needs: [build-macos-arm, build-macos-intel]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos-arm64
+          path: artifacts/arm64
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos-x86_64
+          path: artifacts/x86_64
+      - name: Unzip app bundles
+        run: |
+          cd artifacts/arm64  && unzip -q macos-arm64.zip
+          cd artifacts/x86_64 && unzip -q macos-x86_64.zip
+      - name: Merge into universal binary with lipo
+        run: |
+          ARM_APP="artifacts/arm64/zen_journal.app"
+          X64_APP="artifacts/x86_64/zen_journal.app"
+          UNI_APP="artifacts/universal/zen_journal.app"
+
+          mkdir -p "${UNI_APP}"
+
+          # Copy ARM bundle as the base
+          cp -R "${ARM_APP}/." "${UNI_APP}/"
+
+          # Find all Mach-O binaries and frameworks to merge
+          find "${ARM_APP}" \( -type f -o -type l \) | while read -r ARM_FILE; do
+            REL="${ARM_FILE#${ARM_APP}/}"
+            X64_FILE="${X64_APP}/${REL}"
+            UNI_FILE="${UNI_APP}/${REL}"
+
+            if [[ ! -f "${X64_FILE}" ]]; then
+              continue
+            fi
+
+            # Check if it's a Mach-O binary
+            if file "${ARM_FILE}" | grep -q "Mach-O"; then
+              lipo -create \
+                "${ARM_FILE}" \
+                "${X64_FILE}" \
+                -output "${UNI_FILE}"
+            fi
+          done
+      - name: Archive universal .app
+        run: |
+          cd artifacts/universal
+          zip -r ../../macos-universal.zip zen_journal.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-universal
+          path: macos-universal.zip
+
+# ── Windows (x64) ─────────────────────────────────────────────────────────────
+  build-windows-x64:
+    name: Windows (x64)
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
       - run: flutter pub get
       - run: flutter build windows --release
+      - name: Archive release
+        shell: pwsh
+        run: |
+          Compress-Archive `
+            -Path build\windows\x64\runner\Release\* `
+            -DestinationPath windows-x64.zip
       - uses: actions/upload-artifact@v4
         with:
-          name: windows
-          path: build/windows/x64/runner/Release/
+          name: windows-x64
+          path: windows-x64.zip
 
-  build-linux:
-    name: Linux
-    runs-on: ubuntu-latest
+# ── Windows (ARM64) ───────────────────────────────────────────────────────────
+# Requires the windows-11-arm runner (GitHub larger runners / Actions billing).
+# Set continue-on-error: true so a runner-unavailability failure won't block the release.
+  build-windows-arm64:
+    name: Windows (ARM64)
+    runs-on: windows-11-arm
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get update -y && sudo apt-get install -y ninja-build libgtk-3-dev
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
       - run: flutter pub get
-      - run: flutter build linux --release
+      - run: flutter build windows --release
+      - name: Archive release
+        shell: pwsh
+        run: |
+          Compress-Archive `
+            -Path build\windows\arm64\runner\Release\* `
+            -DestinationPath windows-arm64.zip
       - uses: actions/upload-artifact@v4
         with:
-          name: linux
-          path: build/linux/x64/release/bundle/
+          name: windows-arm64
+          path: windows-arm64.zip
 
+# ── Linux (x64 / AMD64) ───────────────────────────────────────────────────────
+  build-linux-x64:
+    name: Linux (x64 — deb / rpm / AppImage)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Flutter dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ninja-build libgtk-3-dev
+      - name: Install packaging tools
+        run: |
+          sudo apt-get install -y dpkg-dev rpm
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter build linux --release
+      - name: Package .deb / .rpm / .AppImage
+        run: |
+          chmod +x scripts/package-linux.sh
+          ./scripts/package-linux.sh x64 "${VERSION#v}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-x64
+          path: dist/
+
+# ── Linux (ARM64) ─────────────────────────────────────────────────────────────
+  build-linux-arm64:
+    name: Linux (ARM64 — deb / AppImage)
+    runs-on: ubuntu-22.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Flutter dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ninja-build libgtk-3-dev
+      - name: Install packaging tools
+        run: |
+          sudo apt-get install -y dpkg-dev
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter build linux --release
+      - name: Package .deb / .AppImage
+        run: |
+          chmod +x scripts/package-linux.sh
+          ./scripts/package-linux.sh arm64 "${VERSION#v}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-arm64
+          path: dist/
+
+# ── GitHub Release ────────────────────────────────────────────────────────────
   github-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [build-android, build-ios, build-macos, build-windows, build-linux]
+    needs:
+      - build-android
+      - build-ios
+      - build-macos-universal
+      - build-windows-x64
+      - build-linux-x64
+      - build-linux-arm64
     permissions:
       contents: write
     steps:
       - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Rename artifacts for release
+        run: |
+          V="${VERSION#v}"
+          mkdir -p release-files
+
+          # Android
+          cp artifacts/android/app-release.apk \
+             "release-files/zen-journal-${V}-android.apk" 2>/dev/null || true
+          cp "artifacts/android/app-release.aab" \
+             "release-files/zen-journal-${V}-android.aab" 2>/dev/null || true
+
+          # iOS
+          cp artifacts/ios/ios-runner.zip \
+             "release-files/zen-journal-${V}-ios.zip" 2>/dev/null || true
+
+          # macOS
+          cp artifacts/macos-universal/macos-universal.zip \
+             "release-files/zen-journal-${V}-macos-universal.zip" 2>/dev/null || true
+          cp artifacts/macos-arm64/macos-arm64.zip \
+             "release-files/zen-journal-${V}-macos-arm64.zip" 2>/dev/null || true
+          cp artifacts/macos-x86_64/macos-x86_64.zip \
+             "release-files/zen-journal-${V}-macos-intel.zip" 2>/dev/null || true
+
+          # Windows
+          cp artifacts/windows-x64/windows-x64.zip \
+             "release-files/zen-journal-${V}-windows-x64.zip" 2>/dev/null || true
+          cp artifacts/windows-arm64/windows-arm64.zip \
+             "release-files/zen-journal-${V}-windows-arm64.zip" 2>/dev/null || true
+
+          # Linux x64
+          find artifacts/linux-x64 -name "*.deb" -exec \
+            cp {} "release-files/zen-journal-${V}-linux-amd64.deb" \; 2>/dev/null || true
+          find artifacts/linux-x64 -name "*.rpm" -exec \
+            cp {} "release-files/zen-journal-${V}-linux-x86_64.rpm" \; 2>/dev/null || true
+          find artifacts/linux-x64 -name "*.AppImage" -exec \
+            cp {} "release-files/zen-journal-${V}-linux-x86_64.AppImage" \; 2>/dev/null || true
+
+          # Linux ARM64
+          find artifacts/linux-arm64 -name "*.deb" -exec \
+            cp {} "release-files/zen-journal-${V}-linux-arm64.deb" \; 2>/dev/null || true
+          find artifacts/linux-arm64 -name "*.AppImage" -exec \
+            cp {} "release-files/zen-journal-${V}-linux-aarch64.AppImage" \; 2>/dev/null || true
+
+          echo "Release files:"
+          ls -lh release-files/
+
       - uses: softprops/action-gh-release@v2
         with:
-          files: |
-            android/app-release.apk
-            android/app-release.aab
-            linux/**
+          files: release-files/*
           generate_release_notes: true
+          fail_on_unmatched_files: false
