@@ -43,6 +43,7 @@ implementing a feature.
 | [Prompts Library](docs/PROMPTS.md) | Built-in prompt pool, rotation rules, free write |
 | [Export](docs/EXPORT.md) | Markdown, JSON, PDF export, delete all data |
 | [Open Source](docs/OPENSOURCE.md) | License, CI/CD, app stores, contributing, i18n |
+| [Versioning](docs/VERSIONING.md) | SemVer policy, release tags, Android signing/version variables |
 
 ## Core Rules
 

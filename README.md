@@ -76,7 +76,7 @@ Zen Journal is privacy-first by architecture, not by policy.
 ### Setup
 
 ```bash
-git clone https://github.com/<your-org>/zen-journal-app.git
+git clone https://github.com/typerhack/zen-journal.git
 cd zen-journal-app
 flutter pub get
 ```
@@ -105,7 +105,19 @@ flutter build linux --release       # Linux
 ```
 
 Pre-built binaries for all platforms are attached to every
-[GitHub Release](../../releases).
+[GitHub Release](../../releases), including Linux x64 and ARM64
+(`.deb`, `.rpm`, `.AppImage`).
+
+### Versioning
+
+Zen Journal uses Semantic Versioning with git tags:
+
+- stable: `vMAJOR.MINOR.PATCH` (example: `v0.1.0`)
+- optional pre-release: `vMAJOR.MINOR.PATCH-rc.N`
+
+Versioning, Android update rules (`versionCode` + release signing), and
+required release secrets are documented in
+[docs/VERSIONING.md](docs/VERSIONING.md).
 
 ---
 
@@ -166,6 +178,7 @@ Full technical specifications live in `/docs`:
 | [Prompts Library](docs/PROMPTS.md) | Built-in prompt pool |
 | [Export](docs/EXPORT.md) | Markdown, JSON, PDF, delete |
 | [Open Source](docs/OPENSOURCE.md) | License, CI/CD, app stores, i18n |
+| [Versioning](docs/VERSIONING.md) | SemVer, tags, Android version/signing, release file naming |
 
 ---
 

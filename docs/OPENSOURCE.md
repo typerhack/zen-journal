@@ -39,7 +39,10 @@ zen-journal-app/
 
 ## CI/CD — GitHub Actions
 
-### `ci.yml` — runs on every PR
+Versioning and release-number rules are defined in
+[`docs/VERSIONING.md`](VERSIONING.md).
+
+### `ci.yml` — runs on every PR and push to `main`
 
 ```yaml
 jobs:
@@ -59,8 +62,33 @@ jobs:
     steps:
       - flutter build apk --release
 
-  build-linux:
+  build-macos-silicon:
+    runs-on: macos-latest
+    steps:
+      - flutter build macos --release
+
+  build-macos-intel:
+    runs-on: macos-15-intel
+    steps:
+      - flutter build macos --release
+
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - flutter build ios --release --no-codesign
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - flutter build windows --release
+
+  build-linux-x64:
     runs-on: ubuntu-latest
+    steps:
+      - flutter build linux --release
+
+  build-linux-arm64:
+    runs-on: ubuntu-22.04-arm
     steps:
       - flutter build linux --release
 ```
@@ -72,10 +100,13 @@ Builds release artifacts for all platforms and creates a GitHub Release:
 | Platform | Artifact | Runner |
 |---|---|---|
 | Android | `.apk` + `.aab` | `ubuntu-latest` |
-| iOS | `.ipa` | `macos-latest` |
-| macOS | `.dmg` | `macos-latest` |
-| Windows | `.exe` installer | `windows-latest` |
-| Linux | `.AppImage` + `.deb` | `ubuntu-latest` |
+| iOS | `ios-runner.zip` (`Runner.app`) | `macos-latest` |
+| macOS (Apple Silicon) | `macos-arm64.zip` (`.app`) | `macos-latest` |
+| macOS (Intel) | `macos-x86_64.zip` (`.app`) | `macos-15-intel` |
+| Windows (x64) | `windows-x64.zip` | `windows-latest` |
+| Windows (ARM64) | `windows-arm64.zip` | `windows-11-arm` |
+| Linux (x64) | `.deb` + `.rpm` + `.AppImage` | `ubuntu-22.04` |
+| Linux (ARM64) | `.deb` + `.rpm` + `.AppImage` | `ubuntu-22.04-arm` |
 
 All artifacts attached to the GitHub Release automatically.
 

@@ -1,8 +1,41 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+fun envOrProperty(properties: Properties, envKey: String, propertyKey: String): String? {
+    return System.getenv(envKey) ?: properties.getProperty(propertyKey)
+}
+
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
+}
+
+val androidVersionCode = (System.getenv("ZEN_ANDROID_VERSION_CODE") ?: flutter.versionCode.toString()).toInt()
+val androidVersionName = System.getenv("ZEN_ANDROID_VERSION_NAME") ?: flutter.versionName
+val requireReleaseSigning = (System.getenv("ZEN_REQUIRE_RELEASE_SIGNING") ?: "false").toBoolean()
+
+val releaseStoreFilePath = envOrProperty(keystoreProperties, "ZEN_ANDROID_KEYSTORE_PATH", "storeFile")
+val releaseStorePassword = envOrProperty(keystoreProperties, "ZEN_ANDROID_STORE_PASSWORD", "storePassword")
+val releaseKeyAlias = envOrProperty(keystoreProperties, "ZEN_ANDROID_KEY_ALIAS", "keyAlias")
+val releaseKeyPassword = envOrProperty(keystoreProperties, "ZEN_ANDROID_KEY_PASSWORD", "keyPassword")
+
+val hasReleaseSigning = !releaseStoreFilePath.isNullOrBlank() &&
+    !releaseStorePassword.isNullOrBlank() &&
+    !releaseKeyAlias.isNullOrBlank() &&
+    !releaseKeyPassword.isNullOrBlank()
+
+if (requireReleaseSigning && !hasReleaseSigning) {
+    throw GradleException(
+        "Release signing is required, but Android signing credentials are missing. " +
+            "Provide key.properties or ZEN_ANDROID_* environment variables."
+    )
 }
 
 android {
@@ -25,15 +58,29 @@ android {
         // Minimum 21 required for core library desugaring (flutter_local_notifications)
         minSdk = flutter.minSdkVersion  // flutter_local_notifications requires desugaring (minSdk ≥ 21)
         targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        versionCode = androidVersionCode
+        versionName = androidVersionName
+    }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(releaseStoreFilePath!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Use real release signing when configured; otherwise keep local release builds possible.
+            signingConfig = if (hasReleaseSigning) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
