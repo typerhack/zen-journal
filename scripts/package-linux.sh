@@ -8,7 +8,7 @@
 #
 # Outputs (in dist/):
 #   zen-journal_<version>_<deb-arch>.deb
-#   zen-journal-<version>-1.<rpm-arch>.rpm  (x64 only)
+#   zen-journal-<version>-1.<rpm-arch>.rpm
 #   zen-journal-<version>-<appimage-arch>.AppImage
 
 set -euo pipefail
@@ -130,11 +130,6 @@ EOF
 # ── .rpm ──────────────────────────────────────────────────────────────────────
 
 build_rpm() {
-  if [[ "${ARCH}" != "x64" ]]; then
-    echo "  Skipping .rpm — only x64 is supported"
-    return
-  fi
-
   if ! command -v rpmbuild &>/dev/null; then
     echo "  [warning] rpmbuild not found — skipping .rpm"
     return
