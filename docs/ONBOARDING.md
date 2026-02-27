@@ -17,6 +17,7 @@ requests up front.
 ```
 Launch
   → Welcome screen
+  → Theme selection (system / light / dark)
   → Sign in with Google (for Drive sync)
   → Microphone permission  ← only if user taps [try voice]
   → Notification permission ← deferred to day 2

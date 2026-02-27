@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/theme.dart';
 import 'core/router/app_router.dart';
+import 'features/onboarding/data/onboarding_state_store.dart';
 
 /// Root of the application.
 /// Handles system theme detection, lifecycle observation for background
@@ -41,29 +42,81 @@ class _ZenJournalAppState extends ConsumerState<ZenJournalApp>
 
   @override
   Widget build(BuildContext context) {
-    // Resolve system brightness
-    final brightness = View.of(context).platformDispatcher.platformBrightness;
-    final themeData = ZenThemeData.fromBrightness(brightness);
+    final onboardingState = ref.watch(onboardingControllerProvider);
 
-    return ZenTheme(
-      data: themeData,
-      child: WidgetsApp.router(
-        title: 'zen journal',
-        color: themeData.colors.accent,
-        routerConfig: appRouter,
-        builder: (context, child) => ColoredBox(
-          color: themeData.colors.surface,
-          // Stack lives inside WidgetsApp so Directionality is already provided
-          child: Stack(
-            children: [
-              child ?? const SizedBox.shrink(),
-              // Background obscure layer — hides content in app switcher
-              if (_obscured)
-                Positioned.fill(child: _ObscureLayer(colors: themeData.colors)),
-            ],
+    final systemBrightness = View.of(
+      context,
+    ).platformDispatcher.platformBrightness;
+
+    return onboardingState.when(
+      loading: () {
+        final themeData = ZenThemeData.fromBrightness(systemBrightness);
+        return ZenTheme(
+          data: themeData,
+          child: WidgetsApp(
+            title: 'zen journal',
+            color: themeData.colors.accent,
+            builder: (context, child) => Center(
+              child: Text(
+                'loading...',
+                style: themeData.text.bodyMedium.copyWith(
+                  color: themeData.colors.onSurfaceMuted,
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
+      error: (error, stack) {
+        final themeData = ZenThemeData.fromBrightness(systemBrightness);
+        return ZenTheme(
+          data: themeData,
+          child: WidgetsApp(
+            title: 'zen journal',
+            color: themeData.colors.accent,
+            builder: (context, child) => Center(
+              child: Text(
+                '[failed] unable to load onboarding state',
+                style: themeData.text.bodyMedium.copyWith(
+                  color: themeData.colors.destructive,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+      data: (onboarding) {
+        final brightness = switch (onboarding.themePreference) {
+          AppThemePreference.system => systemBrightness,
+          AppThemePreference.light => Brightness.light,
+          AppThemePreference.dark => Brightness.dark,
+        };
+        final themeData = ZenThemeData.fromBrightness(brightness);
+        return ZenTheme(
+          data: themeData,
+          child: WidgetsApp.router(
+            title: 'zen journal',
+            color: themeData.colors.accent,
+            routerConfig: createAppRouter(
+              onboardingComplete: onboarding.isComplete,
+            ),
+            builder: (context, child) => ColoredBox(
+              color: themeData.colors.surface,
+              // Stack lives inside WidgetsApp so Directionality is already provided
+              child: Stack(
+                children: [
+                  child ?? const SizedBox.shrink(),
+                  // Background obscure layer — hides content in app switcher
+                  if (_obscured)
+                    Positioned.fill(
+                      child: _ObscureLayer(colors: themeData.colors),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

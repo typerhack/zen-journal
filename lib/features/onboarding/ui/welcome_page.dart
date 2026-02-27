@@ -38,7 +38,7 @@ class WelcomePage extends StatelessWidget {
               const Spacer(),
               ZenButton(
                 label: 'begin',
-                onTap: () => context.go(Routes.journal),
+                onTap: () => context.go(Routes.onboardingTheme),
               ),
               const SizedBox(height: ZenSpacing.s48),
             ],

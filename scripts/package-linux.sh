@@ -138,25 +138,26 @@ build_rpm() {
   echo "  Building .rpm (${RPM_ARCH})..."
 
   local RPM_ROOT="${DIST_DIR}/rpm-staging"
+  local INSTALL_ROOT="${RPM_ROOT}/INSTALLROOT"
   rm -rf "${RPM_ROOT}"
   mkdir -p "${RPM_ROOT}"/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
-  mkdir -p "${RPM_ROOT}/BUILDROOT/${APP_NAME}-${VERSION}-1.${RPM_ARCH}/opt/${APP_NAME}"
-  mkdir -p "${RPM_ROOT}/BUILDROOT/${APP_NAME}-${VERSION}-1.${RPM_ARCH}/usr/bin"
-  mkdir -p "${RPM_ROOT}/BUILDROOT/${APP_NAME}-${VERSION}-1.${RPM_ARCH}/usr/share/applications"
+  mkdir -p "${INSTALL_ROOT}/opt/${APP_NAME}"
+  mkdir -p "${INSTALL_ROOT}/usr/bin"
+  mkdir -p "${INSTALL_ROOT}/usr/share/applications"
 
   # Copy Flutter bundle
   cp -r "${BUNDLE_DIR}/." \
-    "${RPM_ROOT}/BUILDROOT/${APP_NAME}-${VERSION}-1.${RPM_ARCH}/opt/${APP_NAME}/"
+    "${INSTALL_ROOT}/opt/${APP_NAME}/"
 
   # Wrapper script
-  cat > "${RPM_ROOT}/BUILDROOT/${APP_NAME}-${VERSION}-1.${RPM_ARCH}/usr/bin/${APP_NAME}" << 'EOF'
+  cat > "${INSTALL_ROOT}/usr/bin/${APP_NAME}" << 'EOF'
 #!/bin/sh
 exec /opt/zen-journal/zen_journal "$@"
 EOF
-  chmod 755 "${RPM_ROOT}/BUILDROOT/${APP_NAME}-${VERSION}-1.${RPM_ARCH}/usr/bin/${APP_NAME}"
+  chmod 755 "${INSTALL_ROOT}/usr/bin/${APP_NAME}"
 
   # .desktop entry
-  cat > "${RPM_ROOT}/BUILDROOT/${APP_NAME}-${VERSION}-1.${RPM_ARCH}/usr/share/applications/${APP_NAME}.desktop" << EOF
+  cat > "${INSTALL_ROOT}/usr/share/applications/${APP_NAME}.desktop" << EOF
 [Desktop Entry]
 Name=${DISPLAY_NAME}
 GenericName=Journal
@@ -169,11 +170,6 @@ Categories=Office;Utility;
 Keywords=journal;diary;mindfulness;writing;
 StartupWMClass=zen_journal
 EOF
-
-  # Build file list
-  local FILES
-  FILES=$(find "${RPM_ROOT}/BUILDROOT/${APP_NAME}-${VERSION}-1.${RPM_ARCH}" \
-    -type f -o -type l | sed "s|${RPM_ROOT}/BUILDROOT/${APP_NAME}-${VERSION}-1.${RPM_ARCH}||")
 
   # RPM spec
   cat > "${RPM_ROOT}/SPECS/${APP_NAME}.spec" << EOF
@@ -190,7 +186,8 @@ Zen Journal is a cross-platform mindfulness journaling app with
 on-device AI, end-to-end encrypted storage, and voice transcription.
 
 %install
-cp -r %{_builddir}/../BUILDROOT/${APP_NAME}-${VERSION}-1.${RPM_ARCH}/. %{buildroot}/
+mkdir -p %{buildroot}
+cp -a %{_topdir}/INSTALLROOT/. %{buildroot}/
 
 %files
 /opt/${APP_NAME}
@@ -205,7 +202,6 @@ EOF
 
   rpmbuild -bb \
     --define "_topdir ${RPM_ROOT}" \
-    --buildroot "${RPM_ROOT}/BUILDROOT/${APP_NAME}-${VERSION}-1.${RPM_ARCH}" \
     "${RPM_ROOT}/SPECS/${APP_NAME}.spec"
 
   local RPM_FILE
