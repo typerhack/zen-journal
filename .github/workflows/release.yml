@@ -74,7 +74,11 @@ jobs:
           if [[ ! -d macos/Runner.xcodeproj ]]; then
             flutter create --platforms=macos .
           fi
+          if [[ ! -d macos/Runner.xcworkspace ]]; then
+            (cd macos && pod install)
+          fi
           test -d macos/Runner.xcodeproj
+          test -d macos/Runner.xcworkspace
       - run: flutter pub get
       - run: flutter build macos --release
       - name: Archive .app
@@ -103,7 +107,11 @@ jobs:
           if [[ ! -d macos/Runner.xcodeproj ]]; then
             flutter create --platforms=macos .
           fi
+          if [[ ! -d macos/Runner.xcworkspace ]]; then
+            (cd macos && pod install)
+          fi
           test -d macos/Runner.xcodeproj
+          test -d macos/Runner.xcworkspace
       - run: flutter pub get
       - run: flutter build macos --release
       - name: Archive .app
