@@ -5,6 +5,7 @@ import '../../features/onboarding/ui/theme_setup_page.dart';
 import '../../features/onboarding/ui/sync_setup_page.dart';
 import '../../features/onboarding/ui/first_entry_page.dart';
 import '../../features/journal/ui/journal_page.dart';
+import '../../features/settings/ui/settings_page.dart';
 
 abstract class Routes {
   static const onboardingWelcome = '/onboarding/welcome';
@@ -12,6 +13,7 @@ abstract class Routes {
   static const onboardingSync = '/onboarding/sync';
   static const onboardingFirstEntry = '/onboarding/first-entry';
   static const journal = '/journal';
+  static const settings = '/settings';
 }
 
 GoRouter createAppRouter({required bool onboardingComplete}) {
@@ -49,6 +51,10 @@ GoRouter createAppRouter({required bool onboardingComplete}) {
       GoRoute(
         path: Routes.journal,
         builder: (context, state) => const JournalPage(),
+      ),
+      GoRoute(
+        path: Routes.settings,
+        builder: (context, state) => const SettingsPage(),
       ),
     ],
   );

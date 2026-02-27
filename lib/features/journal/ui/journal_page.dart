@@ -1,9 +1,12 @@
 import 'dart:io' show Platform;
+import 'dart:math' show cos, sin, pi;
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/theme.dart';
 import '../../../ui/components/zen_button.dart';
 import '../../../ui/components/zen_scaffold.dart';
@@ -323,6 +326,17 @@ class _JournalPageState extends ConsumerState<JournalPage>
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Header row — settings link in top-right
+                  Row(
+                    children: [
+                      const Spacer(),
+                      _JournalHeaderButton(
+                        label: 'settings',
+                        onTap: () => context.push(Routes.settings),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: ZenSpacing.s16),
                   if (state.shouldShowReminderNudge) ...[
                     Container(
                       width: double.infinity,
@@ -887,6 +901,73 @@ class _MicPainter extends CustomPainter {
       oldDelegate.color != color;
 }
 
+// Minimal text-only header action — used for top-right navigation taps.
+// No container, no border. Fades to faint on press.
+class _JournalHeaderButton extends StatefulWidget {
+  const _JournalHeaderButton({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  State<_JournalHeaderButton> createState() => _JournalHeaderButtonState();
+}
+
+class _JournalHeaderButtonState extends State<_JournalHeaderButton> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.zenTheme;
+    final reduce = ZenThemeData.reduceMotion(context);
+    return Semantics(
+      button: true,
+      label: widget.label,
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _pressed = true),
+        onTapUp: (_) => setState(() => _pressed = false),
+        onTapCancel: () => setState(() => _pressed = false),
+        onTap: widget.onTap,
+        child: Padding(
+          padding: const EdgeInsets.only(
+            left: ZenSpacing.s8,
+            top: ZenSpacing.s4,
+            bottom: ZenSpacing.s4,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CustomPaint(
+                  painter: _GearPainter(
+                    color: _pressed
+                        ? theme.colors.onSurfaceFaint
+                        : theme.colors.onSurfaceMuted,
+                  ),
+                ),
+              ),
+              const SizedBox(width: ZenSpacing.s8),
+              AnimatedDefaultTextStyle(
+                duration: reduce ? Duration.zero : ZenSpacing.fast,
+                curve: ZenSpacing.easeDefault,
+                style: theme.text.bodySmall.copyWith(
+                  color: _pressed
+                      ? theme.colors.onSurfaceFaint
+                      : theme.colors.onSurfaceMuted,
+                ),
+                child: Text(widget.label),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // Minimal text-only action — used in the full-screen composer toolbar.
 // No container, no border. Color shift on press conveys state.
 class _ComposerTextButton extends StatefulWidget {
@@ -952,4 +1033,54 @@ class _ComposerTextButtonState extends State<_ComposerTextButton> {
       ),
     );
   }
+}
+
+class _GearPainter extends CustomPainter {
+  const _GearPainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    const outerR = 0.46;
+    const innerR = 0.32;
+    const holeR = 0.15;
+    const teeth = 8;
+    const seg = 2 * pi / teeth;
+
+    final gear = Path();
+    for (int i = 0; i < teeth; i++) {
+      final base = i * seg - pi / 2;
+      final pts = <(double, double)>[
+        (innerR, base),
+        (innerR, base + seg * 0.25),
+        (outerR, base + seg * 0.35),
+        (outerR, base + seg * 0.65),
+        (innerR, base + seg * 0.75),
+      ];
+      for (int j = 0; j < pts.length; j++) {
+        final x = cx + pts[j].$1 * size.width * cos(pts[j].$2);
+        final y = cy + pts[j].$1 * size.height * sin(pts[j].$2);
+        if (i == 0 && j == 0) {
+          gear.moveTo(x, y);
+        } else {
+          gear.lineTo(x, y);
+        }
+      }
+    }
+    gear.close();
+    canvas.drawPath(gear, stroke);
+    canvas.drawCircle(Offset(cx, cy), holeR * size.width, stroke);
+  }
+
+  @override
+  bool shouldRepaint(covariant _GearPainter old) => old.color != color;
 }
