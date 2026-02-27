@@ -112,7 +112,7 @@ Pre-built binaries for all platforms are attached to every
 
 Zen Journal uses Semantic Versioning with git tags:
 
-- stable: `vMAJOR.MINOR.PATCH` (example: `v0.1.0`)
+- stable: `vMAJOR.MINOR.PATCH` (example: `v0.1.2`)
 - optional pre-release: `vMAJOR.MINOR.PATCH-rc.N`
 
 Versioning, Android update rules (`versionCode` + release signing), and

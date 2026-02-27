@@ -1,6 +1,6 @@
 name: zen_journal
 description: A calm, private, open-source journaling app.
-version: 0.1.0+1
+version: 0.1.2+102
 publish_to: none
 
 environment:

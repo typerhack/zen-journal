@@ -8,7 +8,7 @@ Zen Journal uses **Semantic Versioning** with git tags:
 - Optional pre-releases: `vMAJOR.MINOR.PATCH-rc.N`
 
 Examples:
-- `v0.1.0`
+- `v0.1.2`
 - `v0.1.1`
 - `v0.2.0-rc.1`
 
@@ -20,8 +20,8 @@ Examples:
    - `.github/workflows/release.yml` triggers on `v*.*.*`
 
 For stable releases, keep `pubspec.yaml` and tag aligned:
-- `pubspec.yaml`: `0.1.0+1`
-- git tag: `v0.1.0`
+- `pubspec.yaml`: `0.1.2+102`
+- git tag: `v0.1.2`
 
 ## Files to update before a release
 
@@ -50,6 +50,7 @@ Release workflow enforces this with:
 - formula: `major * 10000 + minor * 100 + patch`
 - `v0.1.0` -> `100`
 - `v0.1.5` -> `105`
+- `v0.1.2` -> `102`
 - `v0.2.0` -> `200`
 
 ## Android signing files and secrets

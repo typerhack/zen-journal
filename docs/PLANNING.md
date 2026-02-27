@@ -116,4 +116,4 @@ Status legend: [done] done | [todo] todo | [wip] in progress
 - [todo] **Android build validation** — Run CI Android job end-to-end; test on physical device.
 - [todo] **iOS TestFlight** — Codesign setup, provisioning profiles, first internal build.
 - [todo] **App Store / Play Store listings** — Screenshots, descriptions, privacy policy page.
-- [todo] **v0.1.0 tag & release** — Tag triggers release workflow; all platform artifacts published to GitHub Releases.
+- [todo] **v0.1.2 tag & release** — Tag triggers release workflow; all platform artifacts published to GitHub Releases.
