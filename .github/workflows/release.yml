@@ -212,42 +212,6 @@ jobs:
           name: windows-x64
           path: windows-x64.zip
 
-# ── Windows (ARM64) ───────────────────────────────────────────────────────────
-# Requires the windows-11-arm runner (GitHub larger runners / Actions billing).
-  build-windows-arm64:
-    name: Windows (ARM64)
-    runs-on: windows-11-arm
-    needs: [lint, test]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Flutter (arm64 fallback)
-        shell: pwsh
-        run: |
-          git clone --depth 1 --branch "${env:FLUTTER_VERSION}" https://github.com/flutter/flutter.git "$env:USERPROFILE\flutter"
-          "$env:USERPROFILE\flutter\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-      - run: flutter --version
-      - run: flutter pub get
-      - run: flutter build windows --release
-      - name: Archive release
-        shell: pwsh
-        run: |
-          $armPath = "build\windows\arm64\runner\Release\*"
-          $x64Path = "build\windows\x64\runner\Release\*"
-          if (Test-Path $armPath) {
-            $archivePath = $armPath
-          } elseif (Test-Path $x64Path) {
-            $archivePath = $x64Path
-          } else {
-            throw "Windows release output not found in arm64 or x64 directories."
-          }
-          Compress-Archive `
-            -Path $archivePath `
-            -DestinationPath windows-arm64.zip
-      - uses: actions/upload-artifact@v4
-        with:
-          name: windows-arm64
-          path: windows-arm64.zip
-
 # ── Linux (x64 / AMD64) ───────────────────────────────────────────────────────
   build-linux-x64:
     name: Linux (x64 — deb / rpm / AppImage)
@@ -317,7 +281,6 @@ jobs:
       - build-macos-arm
       - build-macos-intel
       - build-windows-x64
-      - build-windows-arm64
       - build-linux-x64
       - build-linux-arm64
     permissions:
@@ -352,8 +315,6 @@ jobs:
           # Windows
           cp artifacts/windows-x64/windows-x64.zip \
              "release-files/zen-journal-${V}-windows-x64.zip"
-          cp artifacts/windows-arm64/windows-arm64.zip \
-             "release-files/zen-journal-${V}-windows-arm64.zip"
 
           # Linux x64
           LINUX_X64_DEB="$(find artifacts/linux-x64 -name "*.deb" -print -quit)"
