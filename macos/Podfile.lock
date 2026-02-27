@@ -11,6 +11,9 @@ PODS:
     - PromisesObjC (~> 2.4)
   - flutter_local_notifications (0.0.1):
     - FlutterMacOS
+  - flutter_secure_storage_darwin (10.0.0):
+    - Flutter
+    - FlutterMacOS
   - FlutterMacOS (1.0.0)
   - google_sign_in_ios (0.0.1):
     - AppAuth (>= 1.7.4)
@@ -57,6 +60,7 @@ PODS:
 
 DEPENDENCIES:
   - flutter_local_notifications (from `Flutter/ephemeral/.symlinks/plugins/flutter_local_notifications/macos`)
+  - flutter_secure_storage_darwin (from `Flutter/ephemeral/.symlinks/plugins/flutter_secure_storage_darwin/darwin`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - google_sign_in_ios (from `Flutter/ephemeral/.symlinks/plugins/google_sign_in_ios/darwin`)
   - local_auth_darwin (from `Flutter/ephemeral/.symlinks/plugins/local_auth_darwin/darwin`)
@@ -78,6 +82,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   flutter_local_notifications:
     :path: Flutter/ephemeral/.symlinks/plugins/flutter_local_notifications/macos
+  flutter_secure_storage_darwin:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_secure_storage_darwin/darwin
   FlutterMacOS:
     :path: Flutter/ephemeral
   google_sign_in_ios:
@@ -97,6 +103,7 @@ SPEC CHECKSUMS:
   AppAuth: d4f13a8fe0baf391b2108511793e4b479691fb73
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
   flutter_local_notifications: 4bf37a31afde695b56091b4ae3e4d9c7a7e6cda0
+  flutter_secure_storage_darwin: acdb3f316ed05a3e68f856e0353b133eec373a23
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   google_sign_in_ios: b48bb9af78576358a168361173155596c845f0b9
   GoogleSignIn: ce8c89bb9b37fb624b92e7514cc67335d1e277e4
