@@ -42,8 +42,14 @@ jobs:
           set -euo pipefail
           test -n "${ANDROID_KEYSTORE_BASE64}"
           test -n "${ANDROID_KEYSTORE_PASSWORD}"
-          test -n "${ANDROID_KEY_ALIAS}"
-          test -n "${ANDROID_KEY_PASSWORD}"
+
+          # Common setup: alias/password may be omitted if using defaults.
+          if [[ -z "${ANDROID_KEY_ALIAS}" ]]; then
+            ANDROID_KEY_ALIAS="zen-journal-upload"
+          fi
+          if [[ -z "${ANDROID_KEY_PASSWORD}" ]]; then
+            ANDROID_KEY_PASSWORD="${ANDROID_KEYSTORE_PASSWORD}"
+          fi
 
           echo "${ANDROID_KEYSTORE_BASE64}" | base64 --decode > android/upload-keystore.jks
           cat > android/key.properties <<EOF
@@ -181,10 +187,12 @@ jobs:
     runs-on: windows-11-arm
     steps:
       - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
+      - name: Setup Flutter (arm64 fallback)
+        shell: pwsh
+        run: |
+          git clone --depth 1 --branch "${env:FLUTTER_VERSION}" https://github.com/flutter/flutter.git "$env:USERPROFILE\flutter"
+          "$env:USERPROFILE\flutter\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - run: flutter --version
       - run: flutter pub get
       - run: flutter build windows --release
       - name: Archive release
