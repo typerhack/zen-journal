@@ -68,10 +68,13 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
           cache-dependency-path: pubspec.lock
-      - name: Enable macOS desktop
-        run: flutter config --enable-macos-desktop
-      - name: Verify macOS project exists
-        run: test -d macos
+      - name: Ensure macOS desktop project
+        run: |
+          flutter config --enable-macos-desktop
+          if [[ ! -d macos/Runner.xcodeproj ]]; then
+            flutter create --platforms=macos .
+          fi
+          test -d macos/Runner.xcodeproj
       - run: flutter pub get
       - run: flutter build macos --release
       - name: Archive .app
@@ -94,10 +97,13 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
           cache-dependency-path: pubspec.lock
-      - name: Enable macOS desktop
-        run: flutter config --enable-macos-desktop
-      - name: Verify macOS project exists
-        run: test -d macos
+      - name: Ensure macOS desktop project
+        run: |
+          flutter config --enable-macos-desktop
+          if [[ ! -d macos/Runner.xcodeproj ]]; then
+            flutter create --platforms=macos .
+          fi
+          test -d macos/Runner.xcodeproj
       - run: flutter pub get
       - run: flutter build macos --release
       - name: Archive .app
