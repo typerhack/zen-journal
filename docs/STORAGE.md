@@ -58,6 +58,14 @@ The key is stored in the platform's secure hardware enclave via
 | Windows | Windows Credential Manager (DPAPI) |
 | Linux | Secret Service API (GNOME Keyring) / encrypted file fallback |
 
+**Migration note:**
+Early development used `SharedPreferences` as a temporary key store.
+`KeyManager.getOrCreateDatabaseKey()` checks for a legacy key in
+SharedPreferences on first access, moves it to secure storage, then
+removes it from SharedPreferences. The database key itself does not
+change during migration — only its storage location. New installs go
+directly to secure storage.
+
 **Cross-device key sync:**
 
 The Google user ID is non-secret and publicly derivable — using it as HKDF
