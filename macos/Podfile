@@ -49,5 +49,14 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_macos_build_settings(target)
+    # Raise any pod whose deployment target is older than 14.0 to match ours.
+    # Suppresses "deployment target is set to X.Y but range is 10.13–26.x" warnings
+    # from AppAuth, GTMSessionFetcher, PromisesObjC, etc.
+    target.build_configurations.each do |config|
+      dt = config.build_settings['MACOSX_DEPLOYMENT_TARGET']
+      if dt && dt.to_f < 14.0
+        config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '14.0'
+      end
+    end
   end
 end
