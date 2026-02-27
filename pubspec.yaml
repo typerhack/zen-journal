@@ -51,8 +51,8 @@ dependencies:
   printing: ^5.14.2
 
   # Local notifications
-  flutter_local_notifications: ^18.0.1
-  timezone: ^0.9.4
+  flutter_local_notifications: ^20.0.0
+  timezone: ^0.10.1
 
   # Biometric lock
   local_auth: ^2.3.0
