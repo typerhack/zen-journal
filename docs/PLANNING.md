@@ -8,7 +8,7 @@ Status legend: ✅ done · 🔲 todo · 🚧 in progress
 
 - ✅ **Concept & stack decisions** — Chose Flutter for cross-platform (iOS, Android, macOS, Windows, Linux) with fully custom widgets; no Material or Cupertino ever.
 - ✅ **CLAUDE.md rules file** — Lightweight non-negotiable rules doc (no Material, no emojis, privacy-first, accessibility required on every widget).
-- ✅ **Documentation suite** — Created 11 spec docs covering design system, architecture, storage, voice, AI, accessibility, security, export, onboarding, editor, notifications, prompts, and open-source guidelines.
+- ✅ **Documentation suite** — Created and maintained 14 spec docs covering design system, architecture, storage, voice, AI, accessibility, security, export, onboarding, editor, notifications, prompts, planning, and open-source guidelines.
 - ✅ **Design system** — ZenTheme InheritedWidget with ZenColors, ZenTextStyles, and ZenSpacing; light + dark tokens verified at WCAG 2.1 AA contrast.
 - ✅ **App shell** — `main.dart`, `ZenJournalApp` (ConsumerStatefulWidget + WidgetsBindingObserver), background-blur obscure layer on lifecycle pause/inactive.
 - ✅ **Router** — GoRouter with `/onboarding` and `/journal` named routes; no Navigator.push anywhere.
@@ -20,9 +20,9 @@ Status legend: ✅ done · 🔲 todo · 🚧 in progress
 
 ## Phase 2 — CI / Build Pipeline ✅
 
-- ✅ **CI workflow** — GitHub Actions lint + test + Android + Linux jobs; fixed "Expected to find project root" error by adding `cache: true` to flutter-action.
-- ✅ **Release workflow** — Full build matrix: Android APK+AAB, iOS (no-codesign), macOS Silicon, macOS Intel, macOS Universal (lipo merge), Windows x64, Windows ARM64, Linux x64, Linux ARM64.
-- ✅ **Linux packaging script** — `scripts/package-linux.sh` produces `.deb`, `.rpm` (x64 only), and `.AppImage` from the Flutter bundle for a given arch and version.
+- ✅ **CI workflow** — GitHub Actions lint + test + build validation for Android, iOS (no-codesign), macOS Apple Silicon, macOS Intel, Windows x64, Linux x64, and Linux ARM64.
+- ✅ **Release workflow** — Full build matrix: Android APK+AAB, iOS (no-codesign), macOS Silicon, macOS Intel, Windows x64, Windows ARM64, Linux x64, Linux ARM64.
+- ✅ **Linux packaging script** — `scripts/package-linux.sh` produces `.deb`, `.rpm`, and `.AppImage` for both x64 and ARM64 from the Flutter bundle for a given arch and version.
 - ✅ **macOS build fixes** — Raised deployment target to 14.0, added pre_install hook to allow onnxruntime static lib, suppressed SQLCipher compiler warnings with `inhibit_all_warnings!`, bumped all outdated pod deployment targets to 14.0 in post_install.
 - ✅ **Dart format / analyzer** — All `lib/` and `test/` files pass `dart format` and `flutter analyze` with zero issues.
 - ✅ **Widget test** — Fixed Directionality crash (moved Stack inside WidgetsApp builder); `flutter test` passes 1/1.
