@@ -19,7 +19,7 @@ dependencies:
 
   # Storage — SQLCipher encrypted SQLite
   sqflite: ^2.4.1
-  sqlcipher_flutter_libs: ^0.5.5
+  sqlcipher_flutter_libs: ^0.7.0+eol
   path: ^1.9.1
   path_provider: ^2.1.5
 

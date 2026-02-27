@@ -7,6 +7,7 @@ on:
 
 env:
   VERSION: ${{ github.ref_name }}   # e.g. v1.0.0
+  FLUTTER_VERSION: 3.38.4
 
 # ── Android ───────────────────────────────────────────────────────────────────
 jobs:
@@ -21,8 +22,9 @@ jobs:
           java-version: 17
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+          cache-dependency-path: pubspec.lock
       - run: flutter pub get
       - run: flutter build apk --release
       - run: flutter build appbundle --release
@@ -41,8 +43,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+          cache-dependency-path: pubspec.lock
       - run: flutter pub get
       - run: flutter build ios --release --no-codesign
       - name: Archive .app
@@ -62,8 +65,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+          cache-dependency-path: pubspec.lock
+      - name: Enable macOS desktop
+        run: flutter config --enable-macos-desktop
+      - name: Verify macOS project exists
+        run: test -d macos
       - run: flutter pub get
       - run: flutter build macos --release
       - name: Archive .app
@@ -83,8 +91,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+          cache-dependency-path: pubspec.lock
+      - name: Enable macOS desktop
+        run: flutter config --enable-macos-desktop
+      - name: Verify macOS project exists
+        run: test -d macos
       - run: flutter pub get
       - run: flutter build macos --release
       - name: Archive .app
@@ -113,8 +126,8 @@ jobs:
           path: artifacts/x86_64
       - name: Unzip app bundles
         run: |
-          cd artifacts/arm64  && unzip -q macos-arm64.zip
-          cd artifacts/x86_64 && unzip -q macos-x86_64.zip
+          unzip -q artifacts/arm64/macos-arm64.zip -d artifacts/arm64
+          unzip -q artifacts/x86_64/macos-x86_64.zip -d artifacts/x86_64
       - name: Merge into universal binary with lipo
         run: |
           ARM_APP="artifacts/arm64/zen_journal.app"
@@ -161,8 +174,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+          cache-dependency-path: pubspec.lock
       - run: flutter pub get
       - run: flutter build windows --release
       - name: Archive release
@@ -178,17 +192,16 @@ jobs:
 
 # ── Windows (ARM64) ───────────────────────────────────────────────────────────
 # Requires the windows-11-arm runner (GitHub larger runners / Actions billing).
-# Set continue-on-error: true so a runner-unavailability failure won't block the release.
   build-windows-arm64:
     name: Windows (ARM64)
     runs-on: windows-11-arm
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+          cache-dependency-path: pubspec.lock
       - run: flutter pub get
       - run: flutter build windows --release
       - name: Archive release
@@ -217,8 +230,9 @@ jobs:
           sudo apt-get install -y dpkg-dev rpm
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+          cache-dependency-path: pubspec.lock
       - run: flutter pub get
       - run: flutter build linux --release
       - name: Package .deb / .rpm / .AppImage
@@ -245,8 +259,9 @@ jobs:
           sudo apt-get install -y dpkg-dev
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+          cache-dependency-path: pubspec.lock
       - run: flutter pub get
       - run: flutter build linux --release
       - name: Package .deb / .AppImage
@@ -265,8 +280,11 @@ jobs:
     needs:
       - build-android
       - build-ios
+      - build-macos-arm
+      - build-macos-intel
       - build-macos-universal
       - build-windows-x64
+      - build-windows-arm64
       - build-linux-x64
       - build-linux-arm64
     permissions:
@@ -278,46 +296,52 @@ jobs:
 
       - name: Rename artifacts for release
         run: |
+          set -euo pipefail
           V="${VERSION#v}"
           mkdir -p release-files
 
           # Android
           cp artifacts/android/app-release.apk \
-             "release-files/zen-journal-${V}-android.apk" 2>/dev/null || true
+             "release-files/zen-journal-${V}-android.apk"
           cp "artifacts/android/app-release.aab" \
-             "release-files/zen-journal-${V}-android.aab" 2>/dev/null || true
+             "release-files/zen-journal-${V}-android.aab"
 
           # iOS
           cp artifacts/ios/ios-runner.zip \
-             "release-files/zen-journal-${V}-ios.zip" 2>/dev/null || true
+             "release-files/zen-journal-${V}-ios.zip"
 
           # macOS
           cp artifacts/macos-universal/macos-universal.zip \
-             "release-files/zen-journal-${V}-macos-universal.zip" 2>/dev/null || true
+             "release-files/zen-journal-${V}-macos-universal.zip"
           cp artifacts/macos-arm64/macos-arm64.zip \
-             "release-files/zen-journal-${V}-macos-arm64.zip" 2>/dev/null || true
+             "release-files/zen-journal-${V}-macos-arm64.zip"
           cp artifacts/macos-x86_64/macos-x86_64.zip \
-             "release-files/zen-journal-${V}-macos-intel.zip" 2>/dev/null || true
+             "release-files/zen-journal-${V}-macos-intel.zip"
 
           # Windows
           cp artifacts/windows-x64/windows-x64.zip \
-             "release-files/zen-journal-${V}-windows-x64.zip" 2>/dev/null || true
+             "release-files/zen-journal-${V}-windows-x64.zip"
           cp artifacts/windows-arm64/windows-arm64.zip \
-             "release-files/zen-journal-${V}-windows-arm64.zip" 2>/dev/null || true
+             "release-files/zen-journal-${V}-windows-arm64.zip"
 
           # Linux x64
-          find artifacts/linux-x64 -name "*.deb" -exec \
-            cp {} "release-files/zen-journal-${V}-linux-amd64.deb" \; 2>/dev/null || true
-          find artifacts/linux-x64 -name "*.rpm" -exec \
-            cp {} "release-files/zen-journal-${V}-linux-x86_64.rpm" \; 2>/dev/null || true
-          find artifacts/linux-x64 -name "*.AppImage" -exec \
-            cp {} "release-files/zen-journal-${V}-linux-x86_64.AppImage" \; 2>/dev/null || true
+          LINUX_X64_DEB="$(find artifacts/linux-x64 -name "*.deb" -print -quit)"
+          LINUX_X64_RPM="$(find artifacts/linux-x64 -name "*.rpm" -print -quit)"
+          LINUX_X64_APPIMAGE="$(find artifacts/linux-x64 -name "*.AppImage" -print -quit)"
+          test -n "${LINUX_X64_DEB}"
+          test -n "${LINUX_X64_RPM}"
+          test -n "${LINUX_X64_APPIMAGE}"
+          cp "${LINUX_X64_DEB}" "release-files/zen-journal-${V}-linux-amd64.deb"
+          cp "${LINUX_X64_RPM}" "release-files/zen-journal-${V}-linux-x86_64.rpm"
+          cp "${LINUX_X64_APPIMAGE}" "release-files/zen-journal-${V}-linux-x86_64.AppImage"
 
           # Linux ARM64
-          find artifacts/linux-arm64 -name "*.deb" -exec \
-            cp {} "release-files/zen-journal-${V}-linux-arm64.deb" \; 2>/dev/null || true
-          find artifacts/linux-arm64 -name "*.AppImage" -exec \
-            cp {} "release-files/zen-journal-${V}-linux-aarch64.AppImage" \; 2>/dev/null || true
+          LINUX_ARM64_DEB="$(find artifacts/linux-arm64 -name "*.deb" -print -quit)"
+          LINUX_ARM64_APPIMAGE="$(find artifacts/linux-arm64 -name "*.AppImage" -print -quit)"
+          test -n "${LINUX_ARM64_DEB}"
+          test -n "${LINUX_ARM64_APPIMAGE}"
+          cp "${LINUX_ARM64_DEB}" "release-files/zen-journal-${V}-linux-arm64.deb"
+          cp "${LINUX_ARM64_APPIMAGE}" "release-files/zen-journal-${V}-linux-aarch64.AppImage"
 
           echo "Release files:"
           ls -lh release-files/

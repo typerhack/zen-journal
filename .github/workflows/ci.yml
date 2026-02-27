@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
 
+env:
+  FLUTTER_VERSION: 3.38.4
+
 jobs:
   lint:
     name: Analyze & format
@@ -13,8 +16,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+          cache-dependency-path: pubspec.lock
       - run: flutter pub get
       - run: flutter analyze
       - run: dart format --output=none --set-exit-if-changed lib/ test/
@@ -26,8 +30,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+          cache-dependency-path: pubspec.lock
       - run: flutter pub get
       - run: flutter test --coverage
 
@@ -43,8 +48,9 @@ jobs:
           java-version: 17
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+          cache-dependency-path: pubspec.lock
       - run: flutter pub get
       # flutter build apk produces a fat/universal APK containing arm64-v8a,
       # armeabi-v7a, and x86_64 slices in a single file.
@@ -58,9 +64,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-      - run: flutter config --enable-macos-desktop
+          cache-dependency-path: pubspec.lock
+      - name: Enable macOS desktop
+        run: flutter config --enable-macos-desktop
+      - name: Verify macOS project exists
+        run: test -d macos
       - run: flutter pub get
       - run: flutter build macos --release
       - uses: actions/upload-artifact@v4
@@ -76,9 +86,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-      - run: flutter config --enable-macos-desktop
+          cache-dependency-path: pubspec.lock
+      - name: Enable macOS desktop
+        run: flutter config --enable-macos-desktop
+      - name: Verify macOS project exists
+        run: test -d macos
       - run: flutter pub get
       - run: flutter build macos --release
       - uses: actions/upload-artifact@v4
@@ -115,8 +129,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+          cache-dependency-path: pubspec.lock
       - run: flutter pub get
       - run: flutter build windows --release
 
@@ -129,7 +144,8 @@ jobs:
       - run: sudo apt-get update -y && sudo apt-get install -y ninja-build libgtk-3-dev libsecret-1-dev
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+          cache-dependency-path: pubspec.lock
       - run: flutter pub get
       - run: flutter build linux --release
