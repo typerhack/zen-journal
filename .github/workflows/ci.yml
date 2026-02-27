@@ -109,6 +109,19 @@ jobs:
           name: macos-x86_64-bin
           path: build/macos/Build/Products/Release/zen_journal.app/Contents/MacOS/zen_journal
 
+  build-ios:
+    name: Build iOS (no-codesign)
+    runs-on: macos-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get
+      - run: flutter build ios --release --no-codesign
+
   build-windows:
     name: Build Windows (x64)
     runs-on: windows-latest
