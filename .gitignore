@@ -39,3 +39,7 @@ coverage/
 
 # Logs
 *.log
+
+# Android signing key — never commit
+upload-keystore.jks
+android/key.properties
