@@ -207,10 +207,11 @@ jobs:
       - name: Install packaging tools
         run: |
           sudo apt-get install -y dpkg-dev rpm
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
+      - name: Setup Flutter (arm64 fallback)
+        run: |
+          git clone --depth 1 --branch "${FLUTTER_VERSION}" https://github.com/flutter/flutter.git "${HOME}/flutter"
+          echo "${HOME}/flutter/bin" >> "${GITHUB_PATH}"
+      - run: flutter --version
       - run: flutter pub get
       - run: flutter build linux --release
       - name: Package .deb / .rpm / .AppImage
